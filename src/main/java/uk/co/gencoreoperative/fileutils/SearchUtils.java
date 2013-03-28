@@ -1,7 +1,5 @@
 package uk.co.gencoreoperative.fileutils;
 
-import static uk.co.gencoreoperative.fileutils.FileUtils.listFolder;
-
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
@@ -64,7 +62,7 @@ public class SearchUtils {
 				} else {
 					search.add(0, f);
 					try {
-						search.addAll(0, listFolder(f));
+						search.addAll(0, FileUtils.listFolder(f));
 					} catch (PermissionDeniedException  e) {
 						// If we cannot access the folder, move on
 					}
@@ -103,7 +101,7 @@ public class SearchUtils {
 			
 			if (f.isDirectory()) {
 				try {
-					search.addAll(listFolder(f));
+					search.addAll(FileUtils.listFolder(f));
 				} catch (PermissionDeniedException e) {
 					// If we cannot access the folder, move on
 				}
