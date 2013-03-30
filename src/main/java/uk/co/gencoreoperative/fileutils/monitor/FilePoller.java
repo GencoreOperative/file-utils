@@ -27,12 +27,18 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * FilePoller is responsible for keeping track of files in a folder. If a file changes the
- * FilePoller needs to be able to determine this.
+ * FilePoller is responsible for keeping track of files in a folder. If a file changes the caller
+ * will be notified by the Collection of FileEvents returned between successive calls to the poll
+ * function.
  *
- * This implementation will maintain some in-memory maps which will track the file size and
+ * Note: This implementation will maintain in-memory maps which will track the file size and
  * last modified timestamps. These will allow the FilePoller to determine whether the file
- * has changed between successive calls.
+ * has changed between successive calls. This however does mean that the implementation is
+ * limited to a reasonable number of files.
+ *
+ * Note: Sizing has not yet been determined.
+ *
+ * @author Robert Wapshott
  */
 public class FilePoller {
     private Map<String, Long> timestamps = new HashMap<String, Long>();
@@ -42,26 +48,81 @@ public class FilePoller {
     private File folder;
 
     public FilePoller(File folder) {
+        if (!folder.isDirectory()) throw new IllegalStateException("must be a folder");
         this.folder = folder;
     }
 
-    private boolean isFileNew(String path) {
-        return timestamps.containsKey(path);
+    /**
+     * @return Return all paths that are currently being tracked.
+     */
+    private Set<String> getAllFilePaths() {
+        return timestamps.keySet();
     }
 
-    private boolean isTimestampChanged(String path, long timestamp) {
-        long result = timestamps.put(path, timestamp);
-        return result != timestamp;
+    /**
+     * Checks if the file has already been added, and if not, adds the file to the maps.
+     *
+     * @param file File to check.
+     * @return True if the file is not currently tracked by the FilePoller.
+     */
+    private boolean isFileNew(File file) {
+        String path = file.getPath();
+
+        if (!timestamps.containsKey(path)) {
+            addPath(file);
+            return true;
+        }
+        return false;
     }
 
-    private boolean isFileSizeChanged(String path, long size) {
-        long result = sizes.put(path, size);
-        return result != size;
+    /**
+     *
+     * @param file
+     * @return
+     */
+    private boolean isFileChanged(File file) {
+        String path = file.getPath();
+        long timestamp = file.lastModified();
+        long size = file.length();
+
+        boolean changed = false;
+        if (timestamps.put(path, timestamp) != timestamp) {
+            changed = true;
+        }
+
+        if (sizes.put(path, size) != size) {
+            changed = true;
+        }
+
+        return changed;
     }
 
+    private void addPath(File file) {
+        long lastModified = file.lastModified();
+        long size = file.length();
+        String path = file.getPath();
+        timestamps.put(path, lastModified);
+        sizes.put(path, size);
+    }
+
+    private void removePath(File file) {
+        String path = file.getPath();
+        timestamps.remove(path);
+        sizes.remove(path);
+    }
+
+    /**
+     * Perform a poll of the files that are covered by this FilePoller.
+     *
+     * If this is the first poll, then no changes will be reported. Any subsequent polls
+     * will indicate the changes that have taken place in the folder and sub folders
+     * of the file system being monitored.
+     *
+     * @return A non null collection of FileEvents indicating changes that have taken place.
+     */
     public List<FileEvent> poll() {
         final List<FileEvent> events = new LinkedList<FileEvent>();
-        final Set<String> deletions = new HashSet<String>(timestamps.keySet());
+        final Set<String> deletions = new HashSet<String>(getAllFilePaths());
 
         SearchUtils.Action action = new SearchUtils.Action(){
             @Override
@@ -70,18 +131,16 @@ public class FilePoller {
                 String path = file.getPath();
 
                 // Process additions
-                if (isFileNew(path)) {
+                if (isFileNew(file)) {
                     events.add(FileEvent.fileAdded(file));
                     return;
                 }
 
-                // Process deletions
+                // The file exists, we don't need to track its deletion
                 deletions.remove(path);
 
                 // Process changed
-                boolean timestampFlag = isTimestampChanged(path, file.lastModified());
-                boolean sizeFlag = isFileSizeChanged(path, file.length());
-                if (timestampFlag || sizeFlag) {
+                if (isFileChanged(file)) {
                     events.add(FileEvent.fileChanged(file));
                 }
             }
@@ -89,7 +148,9 @@ public class FilePoller {
         SearchUtils.iterateTopDown(folder, action);
 
         for (String path : deletions) {
-            events.add(FileEvent.fileDeleted(new File(path)));
+            File file = new File(path);
+            removePath(file);
+            events.add(FileEvent.fileDeleted(file));
         }
 
         if (firstPoll) {
