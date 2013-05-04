@@ -1,8 +1,12 @@
 package uk.co.gencoreoperative.fileutils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A collection of static operations for working with streams.
@@ -10,6 +14,49 @@ import java.io.OutputStream;
  * @author rwapshott
  */
 public class FileStream {
+    /**
+     * Read the contents of a stream and convert it into lines which are placed in a String.
+     *
+     * @param in Non null stream to read. Will not be closed once complete.
+     *
+     * @return A non null but possibly empty string.
+     */
+    public static String readLines(InputStream in) {
+        String r = "";
+        String nl = "\n";
+
+        for (String line : readLinesToList(in)) {
+            r += line + nl;
+        }
+
+        if (!r.isEmpty()) {
+            r.substring(0, r.length() - nl.length());
+        }
+
+        return r;
+    }
+
+    /**
+     * Reads an InputStream and converts it into a list of Strings representing the lines of text
+     * within the stream.
+     *
+     * @param in Non null stream to read. Will not be closed once complete.
+     *
+     * @return A non null, but possibly empty list.
+     */
+    public static List<String> readLinesToList(InputStream in) {
+        List<String> r = new LinkedList<String>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        String data;
+        try {
+            while ((data = reader.readLine()) != null) {
+                r.add(data);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return r;
+    }
 
 	/**
 	 * Copy the contents of one stream to another in an efficient way. This
