@@ -13,11 +13,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Demonstrate the behaviour of the FileStream utility class.
- * 
  * @author rwapshott
  */
-public class FileStreamTest {
+public class StreamUtilsTest {
 	private static final String test = 
 		"Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
     private static final String test2 =
@@ -29,7 +27,7 @@ public class FileStreamTest {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		
 		// When
-		FileStream.copyStream(in, out);
+		StreamUtils.copyStream(in, out);
 		
 		// Then
 		assertEquals(new String(out.toByteArray()), test);
@@ -43,7 +41,7 @@ public class FileStreamTest {
 		ByteArrayOutputStream out = mock(ByteArrayOutputStream.class);
 		
 		// When
-		FileStream.copyStreamWithoutClosingStreams(in, out);
+		StreamUtils.copyStreamWithoutClosingStreams(in, out);
 		
 		// Then
 		verify(in, times(0)).close();
@@ -58,7 +56,7 @@ public class FileStreamTest {
 		ByteArrayOutputStream out = mock(ByteArrayOutputStream.class);
 		
 		// When
-		FileStream.copyStream(in, out);
+		StreamUtils.copyStream(in, out);
 		
 		// Then
 		verify(in, times(1)).close();
@@ -70,7 +68,7 @@ public class FileStreamTest {
         // Given
         ByteArrayInputStream in = new ByteArrayInputStream(test2.getBytes());
         // When
-        List<String> result = FileStream.readLinesToList(in);
+        List<String> result = StreamUtils.readLinesToList(in);
         // Then
         assertNotNull(result);
         assertEquals(4, result.size());

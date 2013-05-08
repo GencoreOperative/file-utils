@@ -34,7 +34,7 @@ public class FileUtils {
 		try {
 			FileInputStream fin = new FileInputStream(source);
 			FileOutputStream fout = new FileOutputStream(target, false);
-			FileStream.copyStream(fin, fout);
+			StreamUtils.copyStream(fin, fout);
 			// Finally set Last Modified timestamp
 			target.setLastModified(source.lastModified());
 		} catch (IOException ex) {

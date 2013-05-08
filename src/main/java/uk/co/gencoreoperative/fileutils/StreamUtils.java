@@ -1,5 +1,7 @@
 package uk.co.gencoreoperative.fileutils;
 
+import uk.co.gencoreoperative.Constants;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +15,7 @@ import java.util.List;
  * 
  * @author rwapshott
  */
-public class FileStream {
+public class StreamUtils {
     /**
      * Read the contents of a stream and convert it into lines which are placed in a String.
      *
@@ -23,14 +25,13 @@ public class FileStream {
      */
     public static String readLines(InputStream in) {
         String r = "";
-        String nl = "\n";
 
         for (String line : readLinesToList(in)) {
-            r += line + nl;
+            r += line + Constants.NEW_LINE;
         }
 
         if (!r.isEmpty()) {
-            r.substring(0, r.length() - nl.length());
+            r.substring(0, r.length() - Constants.NEW_LINE.length());
         }
 
         return r;
