@@ -165,4 +165,19 @@ public class FileUtils {
     	}
     	return Arrays.asList(files);
     }
+
+    /**
+     * Delete the file and throw an exception if the file could not be deleted.
+     *
+     * @param file A file to be deleted.
+     * @throws IOException If the file could not be deleted.
+     */
+    public static void delete(File file) throws IOException {
+        if (file.isDirectory()) {
+            throw new IllegalArgumentException(file.getPath() + " is not a file");
+        }
+        if (!file.delete()) {
+            throw new IOException("Failed to delete " + file.getPath());
+        }
+    }
 }
