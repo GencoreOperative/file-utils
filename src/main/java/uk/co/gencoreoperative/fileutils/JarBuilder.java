@@ -40,16 +40,31 @@ public class JarBuilder {
 
     public static final String META_INF = "META-INF";
     public static final String MANIFEST_MF = "MANIFEST.MF";
+    public static final String JAR_EXTENSION = ".jar";
+
     private ZipOutputStream zout;
     private String jarName;
 
     private JarBuilder(String name) {
+        jarName = name;
+        if (!jarName.endsWith(JAR_EXTENSION)) {
+            jarName += JAR_EXTENSION;
+        }
+
         try {
-            jarName = name;
-            zout = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(name, false)));
+            zout = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(jarName, false)));
         } catch (FileNotFoundException e) {
             throw new IllegalStateException("Could not create file " + name, e);
         }
+
+        /**
+         * Ensure the Jar has at least one entry. In this case the META-INF is appropriate.
+         *
+         * Note: Calling create Entry directly rather than addDirectory because we are creating
+         * the META-INF directory. Hence we also need to close the entry as well.
+         */
+        createEntry(META_INF + "/");
+        closeEntry();
     }
 
     /**
@@ -68,6 +83,7 @@ public class JarBuilder {
             name += "/";
         }
         createEntry(name);
+        closeEntry();
         return this;
     }
 
@@ -88,6 +104,7 @@ public class JarBuilder {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write data", e);
         }
+        closeEntry();
         return this;
     }
 
@@ -97,9 +114,18 @@ public class JarBuilder {
      */
     private void createEntry(String name) {
         try {
-            zout.putNextEntry(new JarEntry(name));
+            JarEntry entry = new JarEntry(name);
+            zout.putNextEntry(entry);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create entry", e);
+        }
+    }
+
+    private void closeEntry() {
+        try {
+            zout.closeEntry();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to close Entry", e);
         }
     }
 
@@ -108,7 +134,6 @@ public class JarBuilder {
      * @return The JarBuilder instance.
      */
     public JarBuilder withManifest(String manifest) {
-        createEntry(META_INF + "/");
         addFile(META_INF + "/" + MANIFEST_MF, new ByteArrayInputStream(manifest.getBytes()));
         return this;
     }
@@ -121,10 +146,10 @@ public class JarBuilder {
         try {
             zout.flush();
             zout.close();
+            return new File(jarName);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        return new File(jarName);
     }
 
 
