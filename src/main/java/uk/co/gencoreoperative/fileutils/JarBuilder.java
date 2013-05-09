@@ -52,10 +52,15 @@ public class JarBuilder {
         }
     }
 
+    /**
+     * @param directory Non null name of the folder.
+     * @return The JarBuilder instance.
+     */
     public JarBuilder addDirectory(String directory) {
         if (directory.startsWith(META_INF)) {
-            throw new IllegalStateException("The manifest folder should not be created directly. " +
-                    "Use the manifest functions");
+            throw new IllegalStateException(
+                    "The manifest folder should not be created directly. " +
+                    "Use the manifest functions for this purpose.");
         }
 
         String name = directory;
@@ -66,6 +71,15 @@ public class JarBuilder {
         return this;
     }
 
+    /**
+     * Add the file entry and copy the contents of the stream to the Jar file.
+     *
+     * Note: This is a blocking operation as the contents are read from the stream.
+     *
+     * @param filename The name of the file to add.
+     * @param contents A stream to the contents of the file to append to the Jar.
+     * @return The JarBuilder instance.
+     */
     public JarBuilder addFile(String filename, InputStream contents) {
         createEntry(filename);
         StreamUtils.copyStreamWithoutClosingStreams(contents, zout);
@@ -77,6 +91,10 @@ public class JarBuilder {
         return this;
     }
 
+    /**
+     * Create an entry in the Jar file.
+     * @param name The name determines the type of entry to create.
+     */
     private void createEntry(String name) {
         try {
             zout.putNextEntry(new JarEntry(name));
@@ -85,6 +103,10 @@ public class JarBuilder {
         }
     }
 
+    /**
+     * @param manifest The entire Manifest file text contents to add.
+     * @return The JarBuilder instance.
+     */
     public JarBuilder withManifest(String manifest) {
         createEntry(META_INF + "/");
         addFile(META_INF + "/" + MANIFEST_MF, new ByteArrayInputStream(manifest.getBytes()));
@@ -92,7 +114,7 @@ public class JarBuilder {
     }
 
     /**
-     * Create the Jar and ensure it is ready to be used.
+     * Complete creation of the Jar file.
      * @return A non null Jar.
      */
     public File build() {
