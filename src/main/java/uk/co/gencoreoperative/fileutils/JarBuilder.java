@@ -25,8 +25,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -43,6 +45,8 @@ public class JarBuilder {
     public static final String MANIFEST = META_INF + "/" + MANIFEST_MF;
 
     public static final String JAR_EXTENSION = ".jar";
+
+    private Set<String> directoriesAdded = new HashSet<String>();
 
     private ZipOutputStream zout;
     private String jarName;
@@ -61,12 +65,8 @@ public class JarBuilder {
 
         /**
          * Ensure the Jar has at least one entry. In this case the META-INF is appropriate.
-         *
-         * Note: Calling create Entry directly rather than addDirectory because we are creating
-         * the META-INF directory. Hence we also need to close the entry as well.
          */
-        createEntry(META_INF + "/");
-        closeEntry();
+        addDirectoryInternal(META_INF);
     }
 
     /**
@@ -79,13 +79,24 @@ public class JarBuilder {
                     "The manifest folder should not be created directly. " +
                     "Use the manifest functions for this purpose.");
         }
+        return addDirectoryInternal(directory);
+    }
 
+    /**
+     * @param directory Non null name of the folder.
+     * @return The JarBuilder instance.
+     */
+    public JarBuilder addDirectoryInternal(String directory) {
         String name = directory;
         if (!directory.endsWith("/")) {
             name += "/";
         }
-        createEntry(name);
-        closeEntry();
+
+        if (!directoriesAdded.contains(directory)) {
+            createEntry(name);
+            closeEntry();
+            directoriesAdded.add(directory);
+        }
         return this;
     }
 

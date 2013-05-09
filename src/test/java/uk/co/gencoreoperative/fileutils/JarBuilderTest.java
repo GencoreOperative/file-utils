@@ -72,6 +72,19 @@ public class JarBuilderTest {
     }
 
     @Test
+    public void shouldAllowMultipleDirectoriesWithTheSameName() throws IOException {
+        File jar = JarBuilder.createJar(randomName())
+                .addDirectory("badger")
+                .addDirectory("badger")
+                .build();
+        JarFile jarFile = new JarFile(jar);
+        ZipEntry entry = jarFile.getEntry("badger/");
+        assertNotNull(entry);
+        assertTrue(jar.delete());
+    }
+
+
+    @Test
     public void shouldAddManifest() throws IOException {
         String manifest = JarBuilder.createManifest().addLine("badger").build();
         File jar = JarBuilder.createJar(randomName()).withManifest(manifest).build();
