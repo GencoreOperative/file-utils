@@ -150,6 +150,8 @@ public class JarBuilder {
 
     /**
      * Fluent API for building the manifest of a Jar file.
+     *
+     * @author Robert Wapshott
      */
     public static class ManifestBuilder {
         private List<String> lines = new LinkedList<String>();
