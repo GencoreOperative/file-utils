@@ -1,6 +1,6 @@
 package uk.co.gencoreoperative.fileutils;
 
-import uk.co.gencoreoperative.Constants;
+import uk.co.gencoreoperative.FileUtilsConstants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,11 +27,11 @@ public class StreamUtils {
         String r = "";
 
         for (String line : readLinesToList(in)) {
-            r += line + Constants.NEW_LINE;
+            r += line + FileUtilsConstants.NEW_LINE;
         }
 
         if (!r.isEmpty()) {
-            r.substring(0, r.length() - Constants.NEW_LINE.length());
+            r.substring(0, r.length() - FileUtilsConstants.NEW_LINE.length());
         }
 
         return r;

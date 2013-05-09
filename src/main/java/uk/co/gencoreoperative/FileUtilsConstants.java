@@ -20,6 +20,6 @@ package uk.co.gencoreoperative;
  *
  * @author Robert Wapshott
  */
-public class Constants {
+public class FileUtilsConstants {
     public static final String NEW_LINE = System.getProperty("line.separator");
 }

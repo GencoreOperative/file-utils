@@ -15,7 +15,7 @@
  */
 package uk.co.gencoreoperative.fileutils;
 
-import uk.co.gencoreoperative.Constants;
+import uk.co.gencoreoperative.FileUtilsConstants;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -40,6 +40,8 @@ public class JarBuilder {
 
     public static final String META_INF = "META-INF";
     public static final String MANIFEST_MF = "MANIFEST.MF";
+    public static final String MANIFEST = META_INF + "/" + MANIFEST_MF;
+
     public static final String JAR_EXTENSION = ".jar";
 
     private ZipOutputStream zout;
@@ -134,7 +136,7 @@ public class JarBuilder {
      * @return The JarBuilder instance.
      */
     public JarBuilder withManifest(String manifest) {
-        addFile(META_INF + "/" + MANIFEST_MF, new ByteArrayInputStream(manifest.getBytes()));
+        addFile(MANIFEST, new ByteArrayInputStream(manifest.getBytes()));
         return this;
     }
 
@@ -200,9 +202,9 @@ public class JarBuilder {
         public String build() {
             String r = "";
             for (String line : lines) {
-                r += line + Constants.NEW_LINE;
+                r += line + FileUtilsConstants.NEW_LINE;
             }
-            r += Constants.NEW_LINE;
+            r += FileUtilsConstants.NEW_LINE;
             return r;
         }
     }
