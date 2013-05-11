@@ -93,6 +93,25 @@ public class JarBuilderTest {
         assertTrue(jar.delete());
     }
 
+    @Test
+    public void shouldCompressDataStored() {
+        ByteArrayInputStream contents = new ByteArrayInputStream("aaaaaaaaaaaaaaaaaaaa".getBytes());
+
+        File uncompressed = JarBuilder.createJar(randomName())
+                .addFile("badger", contents)
+                .build();
+
+        File compressed = JarBuilder.createJar(randomName())
+                .withCompression()
+                .addFile("badger", contents)
+                .build();
+
+        assertTrue(compressed.length() < uncompressed.length());
+        assertTrue(uncompressed.delete());
+        assertTrue(compressed.delete());
+    }
+
+
     private static String randomName() {
         return RandomStringUtils.randomAlphabetic(5);
     }

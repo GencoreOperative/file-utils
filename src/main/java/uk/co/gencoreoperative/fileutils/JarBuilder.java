@@ -70,6 +70,15 @@ public class JarBuilder {
     }
 
     /**
+     * Signal the Jar file that it is to use compression for all subsequent entries added to the jar.
+     * @return The JarBuilder instance.
+     */
+    public JarBuilder withCompression() {
+        zout.setLevel(9);
+        return this;
+    }
+
+    /**
      * @param directory Non null name of the folder.
      * @return The JarBuilder instance.
      */
