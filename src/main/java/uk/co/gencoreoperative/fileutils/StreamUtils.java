@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -114,4 +115,55 @@ public class StreamUtils {
 			throw new IllegalStateException(ex);
 		}
 	}
+
+    /**
+     * Generate an iterator which wraps the process of reading lines of text from a file.
+     * This iterator is able to handle any size of file as it only reads a line when next
+     * is called.
+     *
+     * Once the end of the file is reached, the iterator will automatically close the file
+     * input stream.
+     *
+     * @param stream Non null stream to read from.
+     * @return An iterator primed with the first line of the file.
+     */
+    public static Iterator<String> getLineIterator(InputStream stream) {
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+
+        return new Iterator<String>() {
+            private String next = readLine();
+            private String readLine() {
+                try {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        reader.close();
+                    }
+                    return line;
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                return next != null;
+            }
+
+            @Override
+            public String next() {
+                if (next == null) {
+                    return null;
+                }
+
+                String r = next;
+                next = readLine();
+                return r;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
 }

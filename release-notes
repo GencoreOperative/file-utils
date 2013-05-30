@@ -1,3 +1,4 @@
 0.3 - Added FileUtils.listFolder to ensure that listing a folder is handled consistently.
 
 1.0.1 - Added the JarBuilder collection of Jar related functions. Renamed the FileStream function to StreamUtils.
+1.0.2 - Added getLineIterator to StreamUtils to provide convenient processing of a large file.

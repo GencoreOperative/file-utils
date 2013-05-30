@@ -5,6 +5,9 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -73,4 +76,34 @@ public class StreamUtilsTest {
         assertNotNull(result);
         assertEquals(4, result.size());
     }
+
+    @Test
+    public void shouldIterateOverAllLines() {
+        // Given
+        ByteArrayInputStream in = new ByteArrayInputStream(test2.getBytes());
+        Iterator<String> iterator = StreamUtils.getLineIterator(in);
+        List<String> results = new ArrayList<String>();
+
+        // When
+        for (String line = iterator.next(); line != null; line = iterator.next()) {
+            results.add(line);
+        }
+
+        // Then
+        assertEquals(4, results.size());
+    }
+
+    @Test
+    public void shouldCloseInputStreamWhenComplete() throws IOException {
+        // Given
+        InputStream in = spy(new ByteArrayInputStream("".getBytes()));
+        Iterator<String> iterator = StreamUtils.getLineIterator(in);
+
+        // When
+        iterator.next();
+
+        // Then
+        verify(in).close();
+    }
+
 }
