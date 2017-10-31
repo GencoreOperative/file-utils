@@ -2,3 +2,4 @@
 
 1.0.1 - Added the JarBuilder collection of Jar related functions. Renamed the FileStream function to StreamUtils.
 1.0.2 - Added getLineIterator to StreamUtils to provide convenient processing of a large file.
+1.0.3 - Bug in Read Line, where line included new line character.

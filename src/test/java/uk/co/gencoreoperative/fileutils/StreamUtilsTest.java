@@ -1,6 +1,7 @@
 package uk.co.gencoreoperative.fileutils;
 
 import org.junit.Test;
+import uk.co.gencoreoperative.FileUtilsConstants;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -76,6 +78,16 @@ public class StreamUtilsTest {
         assertNotNull(result);
         assertEquals(4, result.size());
     }
+
+    @Test
+    public void shouldTrimLastCharacterFromLine() {
+		// Given
+		ByteArrayInputStream in = new ByteArrayInputStream(test2.getBytes());
+		// When
+		String result = StreamUtils.readLines(in);
+		// Then
+		assertFalse(result.endsWith(FileUtilsConstants.NEW_LINE));
+	}
 
     @Test
     public void shouldIterateOverAllLines() {

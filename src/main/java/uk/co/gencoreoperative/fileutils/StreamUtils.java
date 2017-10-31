@@ -32,7 +32,7 @@ public class StreamUtils {
         }
 
         if (!r.isEmpty()) {
-            r.substring(0, r.length() - FileUtilsConstants.NEW_LINE.length());
+            r = r.substring(0, r.length() - FileUtilsConstants.NEW_LINE.length());
         }
 
         return r;
