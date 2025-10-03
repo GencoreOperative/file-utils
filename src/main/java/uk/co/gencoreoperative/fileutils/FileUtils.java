@@ -1,15 +1,9 @@
 package uk.co.gencoreoperative.fileutils;
 
-import uk.co.gencoreoperative.fileutils.SearchUtils.Action;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class FileUtils {
@@ -22,91 +16,91 @@ public class FileUtils {
 		this.searchUtils = search;
 	}
 	
-	public void copy(File source, File target) {
-		if (source == null) throw new IllegalArgumentException("source");
-		if (target == null) throw new IllegalArgumentException("target");
-		if (!source.exists()) throw new IllegalStateException("source doesn't exist");
-		
-		if (target.isDirectory()) {
-			removeFolder(target);
-		}
-		
-		try {
-			FileInputStream fin = new FileInputStream(source);
-			FileOutputStream fout = new FileOutputStream(target, false);
-			StreamUtils.copyStream(fin, fout);
-			// Finally set Last Modified timestamp
-			target.setLastModified(source.lastModified());
-		} catch (IOException ex) {
-			throw new IllegalStateException(ex);
-		}
-	}
+//	public void copy(File source, File target) {
+//		if (source == null) throw new IllegalArgumentException("source");
+//		if (target == null) throw new IllegalArgumentException("target");
+//		if (!source.exists()) throw new IllegalStateException("source doesn't exist");
+//
+//		if (target.isDirectory()) {
+//			removeFolder(target);
+//		}
+//
+//		try {
+//			FileInputStream fin = new FileInputStream(source);
+//			FileOutputStream fout = new FileOutputStream(target, false);
+//			StreamUtils.copyStream(fin, fout);
+//			// Finally set Last Modified timestamp
+//			target.setLastModified(source.lastModified());
+//		} catch (IOException ex) {
+//			throw new IllegalStateException(ex);
+//		}
+//	}
 
-    /**
-     * Remove all files within a folder and the folder its self.
-     * @param folder Non folder to remove files from.
-     */
-	public void removeFolder(File folder) {
-		if (folder == null) throw new IllegalArgumentException("folder");
-		if (!folder.exists()) return;
-		if (folder.isFile() && !folder.delete()) {
-			throw new IllegalStateException("Could not delete " + folder.getPath());
-		}
-		
-		SearchUtils.iterateBottomUp(folder, new Action(){
-			@Override
-			public void perform(File file) {
-				if (!file.delete()) {
-					throw new IllegalStateException("Could not delete " + file.getPath());
-				}
-			}
-		});
-	}
+//    /**
+//     * Remove all files within a folder and the folder its self.
+//     * @param folder Non folder to remove files from.
+//     */
+//	public void removeFolder(File folder) {
+//		if (folder == null) throw new IllegalArgumentException("folder");
+//		if (!folder.exists()) return;
+//		if (folder.isFile() && !folder.delete()) {
+//			throw new IllegalStateException("Could not delete " + folder.getPath());
+//		}
+//
+//		SearchUtils.iterateBottomUp(folder, new Action(){
+//			@Override
+//			public void perform(File file) {
+//				if (!file.delete()) {
+//					throw new IllegalStateException("Could not delete " + file.getPath());
+//				}
+//			}
+//		});
+//	}
     
-    public void copyFolder(final File source, final File target) {
-		if (source == null) throw new IllegalArgumentException("source");
-		if (target == null) throw new IllegalArgumentException("target");
-		if (!source.isDirectory()) throw new IllegalArgumentException("source is not folder");
-		
-		// Prepare the source path, needed later
-		String temp = source.getAbsolutePath();
-		if (!temp.endsWith(File.separator)) {
-			temp += File.separator;
-		}
-		final String sourcePath = temp;
-		
-		
-		// Build a map of each File to its relative path
-		final Map<String, File> pathMap = new HashMap<String, File>();
-		searchUtils.iterateTopDown(source, new Action(){
-			@Override
-			public void perform(File file) {
-				if (file.equals(source)) return;
-				String path = file.getAbsolutePath();
-				path = path.substring(sourcePath.length(), path.length());
-				pathMap.put(path, file);
-			}
-		});
-		
-		/**
-		 * Iterate over the map of files, copying source to target.
-		 */
-		for (String path : pathMap.keySet()) {
-			File s = pathMap.get(path);
-			File t = new File(target.getAbsoluteFile() + File.separator + path);
-			File tP = t.getParentFile();
-			
-			if (!tP.exists() && !tP.mkdirs()) {
-				throw new IllegalStateException("Couldn't create " + tP.getPath());
-			}
-			
-			if (s.isFile()) {
-				copy(s, t);
-			} else if (s.isDirectory()) {
-				t.mkdir();
-			}
-		}
-	}
+//    public void copyFolder(final File source, final File target) {
+//		if (source == null) throw new IllegalArgumentException("source");
+//		if (target == null) throw new IllegalArgumentException("target");
+//		if (!source.isDirectory()) throw new IllegalArgumentException("source is not folder");
+//
+//		// Prepare the source path, needed later
+//		String temp = source.getAbsolutePath();
+//		if (!temp.endsWith(File.separator)) {
+//			temp += File.separator;
+//		}
+//		final String sourcePath = temp;
+//
+//
+//		// Build a map of each File to its relative path
+//		final Map<String, File> pathMap = new HashMap<String, File>();
+//		searchUtils.forEachFile(source, new Action(){
+//			@Override
+//			public void perform(File file) {
+//				if (file.equals(source)) return;
+//				String path = file.getAbsolutePath();
+//				path = path.substring(sourcePath.length(), path.length());
+//				pathMap.put(path, file);
+//			}
+//		});
+//
+//		/**
+//		 * Iterate over the map of files, copying source to target.
+//		 */
+//		for (String path : pathMap.keySet()) {
+//			File s = pathMap.get(path);
+//			File t = new File(target.getAbsoluteFile() + File.separator + path);
+//			File tP = t.getParentFile();
+//
+//			if (!tP.exists() && !tP.mkdirs()) {
+//				throw new IllegalStateException("Couldn't create " + tP.getPath());
+//			}
+//
+//			if (s.isFile()) {
+//				copy(s, t);
+//			} else if (s.isDirectory()) {
+//				t.mkdir();
+//			}
+//		}
+//	}
 	
     /**
      * Given a file path, split the folders and file name into an array.

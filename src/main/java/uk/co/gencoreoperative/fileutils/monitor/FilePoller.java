@@ -103,44 +103,44 @@ public class FilePoller {
      *
      * @return A non null collection of FileEvents indicating changes that have taken place.
      */
-    public List<FileEvent> poll() {
-        final List<FileEvent> events = new LinkedList<FileEvent>();
-        final Set<String> deletions = new HashSet<String>(getAllFilePaths());
-
-        SearchUtils.Action action = new SearchUtils.Action(){
-            @Override
-            public void perform(File file) {
-                if (file.isDirectory()) return;
-                String path = file.getPath();
-
-                // Process additions
-                if (isFileNew(file)) {
-                    events.add(FileEvent.fileAdded(file));
-                    return;
-                }
-
-                // The file exists, we don't need to track its deletion
-                deletions.remove(path);
-
-                // Process changed
-                if (isFileChanged(file)) {
-                    events.add(FileEvent.fileChanged(file));
-                }
-            }
-        };
-        SearchUtils.iterateTopDown(folder, action);
-
-        for (String path : deletions) {
-            File file = new File(path);
-            removePath(file);
-            events.add(FileEvent.fileDeleted(file));
-        }
-
-        if (firstPoll) {
-            firstPoll = false;
-            return Collections.emptyList();
-        }
-
-        return events;
-    }
+//    public List<FileEvent> poll() {
+//        final List<FileEvent> events = new LinkedList<FileEvent>();
+//        final Set<String> deletions = new HashSet<String>(getAllFilePaths());
+//
+//        SearchUtils.Action action = new SearchUtils.Action(){
+//            @Override
+//            public void perform(File file) {
+//                if (file.isDirectory()) return;
+//                String path = file.getPath();
+//
+//                // Process additions
+//                if (isFileNew(file)) {
+//                    events.add(FileEvent.fileAdded(file));
+//                    return;
+//                }
+//
+//                // The file exists, we don't need to track its deletion
+//                deletions.remove(path);
+//
+//                // Process changed
+//                if (isFileChanged(file)) {
+//                    events.add(FileEvent.fileChanged(file));
+//                }
+//            }
+//        };
+//        SearchUtils.forEachFile(folder, action);
+//
+//        for (String path : deletions) {
+//            File file = new File(path);
+//            removePath(file);
+//            events.add(FileEvent.fileDeleted(file));
+//        }
+//
+//        if (firstPoll) {
+//            firstPoll = false;
+//            return Collections.emptyList();
+//        }
+//
+//        return events;
+//    }
 }

@@ -1,11 +1,16 @@
 package uk.co.gencoreoperative.fileutils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * Provides a collection of mechanisms for searching a file system.
@@ -15,64 +20,6 @@ import java.util.Set;
 public class SearchUtils {
 	
 	/**
-	 * Iterates over the contents of the Folder performing the Action on each
-	 * file and folder contained within the folder. The file/folders will be 
-	 * processed depth first, so that the lowest file or folder in a particular
-	 * folder will be processed first.
-	 * 
-	 * This is important for recursive delete operations for example.
-	 * 
-	 * @param folder Non null, must be a folder.
-	 * @param action Non null.
-	 */
-	public static void iterateBottomUp(File folder, Action action) {
-		if (folder == null) throw new IllegalArgumentException("folder");
-		if (!folder.isDirectory()) {
-			throw new IllegalArgumentException("folder did not exist");
-		}
-		if (action == null) throw new IllegalArgumentException("action");
-		
-		/**
-		 * Search will provide us a means of iterating over the folder structure
-		 * without needing recursion. For very large file systems, using recursion
-		 * can blow the heap.
-		 */
-		List<File> search = new LinkedList<File>();
-		/**
-		 * Listed will help us keep track of which folders we have listed.
-		 */
-		Set<File> listed = new HashSet<File>();
-		search.add(folder);
-		
-		while (!search.isEmpty()) {
-			File f = search.remove(0);
-			
-			if (f.isFile()) {
-				action.perform(f);
-			} else if (f.isDirectory()) {
-				/**
-				 * Have we listed the contents of this folder? If we have
-				 * then it will be in the listed set. If it is in that set
-				 * then we know we have processed the child file/folders
-				 * already and can safely process the current folder.
-				 */
-				if (listed.contains(f)) {
-					listed.remove(f);
-					action.perform(f);
-				} else {
-					search.add(0, f);
-					try {
-						search.addAll(0, FileUtils.listFolder(f));
-					} catch (PermissionDeniedException  e) {
-						// If we cannot access the folder, move on
-					}
-					listed.add(f);
-				}
-			}
-		}
-	}
-	
-	/**
 	 * Iterates over the contents of the folder in a top down way.
 	 * 
 	 * This approach is more suitable for folder copy operations.
@@ -80,33 +27,14 @@ public class SearchUtils {
 	 * @param folder Non null, must be a folder.
 	 * @param action Non null.
 	 */
-	public static void iterateTopDown(File folder, Action action) {
-		if (folder == null) throw new IllegalArgumentException("folder");
-		if (!folder.isDirectory()) {
-			throw new IllegalArgumentException("folder did not exist");
-		}
-		if (action == null) throw new IllegalArgumentException("action");
-		
-		/**
-		 * Search will provide us a means of iterating over the folder structure
-		 * without needing recursion. For very large file systems, using recursion
-		 * can blow the heap.
-		 */
-		List<File> search = new LinkedList<File>();
-		search.add(folder);
-		
-		while (!search.isEmpty()) {
-			File f = search.remove(0);
-			action.perform(f);
-			
-			if (f.isDirectory()) {
-				try {
-					search.addAll(FileUtils.listFolder(f));
-				} catch (PermissionDeniedException e) {
-					// If we cannot access the folder, move on
-				}
-			}
-		}
+	public static void forEachFile(File folder, Consumer<File> action) {
+        try (Stream<Path> walk = Files.walk(folder.toPath(), FileVisitOption.FOLLOW_LINKS)){
+			walk.map(Path::toFile)
+					.filter(File::isFile)
+					.forEach(action);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 	}
 	
 	/**
@@ -121,42 +49,17 @@ public class SearchUtils {
 	 * @return A collection of Files which the Search implementation 
 	 * returned true for.
 	 */
-	public static Collection<File> search(File startFolder, final Search search) {
+	public static Collection<File> search(File startFolder, final Predicate<File> search) {
 		final List<File> results = new LinkedList<File>();
-		iterateTopDown(startFolder, new Action() {
-			@Override
-			public void perform(File file) {
-				if (search.include(file)) results.add(file);
-			}
-		});
+		forEachFile(startFolder, file -> {
+            if (search.test(file)) {
+                results.add(file);
+            }
+        });
 		return results;
 	}
-	
-	/**
-	 * Action to be performed during a Folder operation.
-	 * 
-	 * @author Robert Wapshott
-	 */
-	public static interface Action {
-		public void perform(File file);
-	}
-	
-	/**
-	 * Search represents a simple interface to determine which files
-	 * should be included in a file system search.
-	 * 
-	 * @author rwapshott
-	 */
-	public static interface Search {
-		public boolean include(File file);
-	}
-	
+
 	public static void main(String [] args) {
-		iterateBottomUp(new File("."), new Action(){
-			@Override
-			public void perform(File file) {
-				System.out.println(file.getPath());
-			}
-		});
+		forEachFile(new File("."), file -> System.out.println(file.getPath()));
 	}
 }
