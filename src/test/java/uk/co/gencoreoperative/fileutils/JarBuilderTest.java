@@ -1,15 +1,17 @@
 package uk.co.gencoreoperative.fileutils;
 
-import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * A collection of integration tests for the JarBuilder.
@@ -96,6 +98,6 @@ public class JarBuilderTest {
 
 
     private static String randomName() {
-        return RandomStringUtils.randomAlphabetic(5);
+        return UUID.randomUUID().toString();
     }
 }
